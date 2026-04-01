@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vitest run)",
+      "Bash(npx vitest:*)",
+      "mcp__playwright__browser_navigate"
+    ]
+  }
+}

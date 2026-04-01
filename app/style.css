@@ -1,0 +1,585 @@
+/* === Reset & Base === */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
+  background: #f8f9fa;
+  color: #333;
+  line-height: 1.5;
+  min-height: 100dvh;
+}
+
+/* === App Layout === */
+.calendar-app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 8px;
+}
+
+.app-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 4px;
+  color: #1a1a2e;
+}
+
+.app-user {
+  font-size: 0.85rem;
+  text-align: center;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.app-status {
+  text-align: center;
+  padding: 40px 16px;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.app-status--error {
+  color: #d32f2f;
+}
+
+.app-login-btn {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 12px 32px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: #00b900;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.app-login-btn:active {
+  background: #009a00;
+}
+
+/* === Member Selector === */
+.member-selector {
+  position: relative;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 0.85rem;
+}
+
+.member-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.member-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 16px;
+  background: #e3f2fd;
+  color: #1565c0;
+  font-size: 0.8rem;
+}
+
+.member-chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: none;
+  color: #1565c0;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.member-search-wrapper {
+  position: relative;
+}
+
+.member-search {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.member-search:focus {
+  border-color: #1565c0;
+}
+
+.member-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-top: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.member-dropdown__item {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #333;
+}
+
+.member-dropdown__item:hover {
+  background: #f0f4ff;
+}
+
+.member-hint {
+  color: #999;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+/* === Week Picker === */
+.week-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 6px 0;
+}
+
+.week-picker__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #555;
+  transition: background 0.15s;
+}
+
+.week-picker__btn:active:not(:disabled) {
+  background: #e8e8e8;
+}
+
+.week-picker__btn:disabled {
+  color: #ccc;
+  border-color: #e8e8e8;
+  cursor: not-allowed;
+}
+
+.week-picker__label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 120px;
+  text-align: center;
+}
+
+/* === Weekly Calendar === */
+.calendar-loading {
+  text-align: center;
+  padding: 32px;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.weekly-calendar {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+/* Header row */
+.calendar-header {
+  display: grid;
+  grid-template-columns: 44px repeat(7, 1fr);
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 6px 2px;
+  color: #555;
+  border-left: 1px solid #e0e0e0;
+}
+
+/* Body grid */
+.calendar-body {
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.calendar-row {
+  display: grid;
+  grid-template-columns: 44px repeat(7, 1fr);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.calendar-row--end {
+  border-bottom: none;
+}
+
+.calendar-time-label {
+  font-size: 0.65rem;
+  color: #999;
+  padding: 2px 4px;
+  text-align: right;
+  align-self: start;
+  line-height: 1;
+}
+
+.calendar-cell {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #f0f0f0;
+  min-height: 32px;
+}
+
+.calendar-slot {
+  flex: 1;
+  min-height: 16px;
+}
+
+.calendar-slot + .calendar-slot {
+  border-top: 1px dashed #f0f0f0;
+}
+
+.slot-free {
+  background: #c8f7c5;
+}
+
+.slot-busy {
+  background: #f5f5f5;
+}
+
+/* === Interactive Calendar === */
+.interactive-calendar .slot-free {
+  cursor: pointer;
+}
+
+.interactive-calendar .slot-free:active {
+  background: #a8e6a5;
+}
+
+.slot-selected {
+  background: #42a5f5;
+  cursor: pointer;
+}
+
+.slot-selected:active {
+  background: #1e88e5;
+}
+
+.slot-other-candidate {
+  background: #bbdefb;
+  cursor: pointer;
+  position: relative;
+}
+
+.slot-other-candidate:active {
+  background: #90caf9;
+}
+
+.slot-confirmed {
+  background: #ff9800;
+}
+
+.slot-badge {
+  font-size: 0.5rem;
+  color: #1565c0;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+/* === Form Sections (Page 1) === */
+.form-section {
+  margin-bottom: 12px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  background: #fff;
+}
+
+.form-input:focus {
+  border-color: #1565c0;
+}
+
+.duration-picker {
+  display: flex;
+  gap: 6px;
+}
+
+.duration-picker__btn {
+  flex: 1;
+  padding: 8px 4px;
+  font-size: 0.85rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.duration-picker__btn--active {
+  background: #1565c0;
+  color: #fff;
+  border-color: #1565c0;
+}
+
+.form-error {
+  color: #d32f2f;
+  font-size: 0.8rem;
+  margin: 8px 0;
+}
+
+.form-submit {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: #1565c0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: background 0.15s;
+}
+
+.form-submit:active {
+  background: #0d47a1;
+}
+
+.form-submit:disabled {
+  background: #bbb;
+  cursor: not-allowed;
+}
+
+/* === Generated URL (Page 1 success) === */
+.generated-url {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.generated-url__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2e7d32;
+  margin-bottom: 8px;
+}
+
+.generated-url__desc {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.generated-url__box {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.generated-url__input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  background: #f5f5f5;
+  color: #333;
+  outline: none;
+}
+
+.generated-url__copy {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  background: #1565c0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.generated-url__copy:active {
+  background: #0d47a1;
+}
+
+.generated-url__link {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: #1565c0;
+  text-decoration: underline;
+}
+
+.generated-url__new {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 0.9rem;
+  color: #555;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* === Reservation Page (Page 2) === */
+.confirmed-banner {
+  text-align: center;
+  padding: 10px 12px;
+  background: #fff3e0;
+  color: #e65100;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  border: 1px solid #ffcc80;
+}
+
+.reservation-info {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 8px;
+  padding: 8px 4px;
+}
+
+.reservation-info__members,
+.reservation-info__candidates {
+  margin-bottom: 2px;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 6px 4px;
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.legend-color {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border: 1px solid #ddd;
+}
+
+.reservation-message {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #1565c0;
+  padding: 8px 0;
+}
+
+.reservation-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn:disabled {
+  background: #bbb;
+  color: #fff;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  color: #fff;
+  background: #1565c0;
+}
+
+.btn--primary:active:not(:disabled) {
+  background: #0d47a1;
+}
+
+.btn--confirm {
+  color: #fff;
+  background: #e65100;
+}
+
+.btn--confirm:active:not(:disabled) {
+  background: #bf360c;
+}

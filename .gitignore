@@ -1,0 +1,10 @@
+node_modules/
+dist/
+docker/
+.env
+*.local
+.env.local
+cdk.out/
+infra/cdk.out/
+key
+.playwright-mcp/
