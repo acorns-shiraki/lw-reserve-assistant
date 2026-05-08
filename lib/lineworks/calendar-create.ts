@@ -6,6 +6,7 @@ interface CreateEventParams {
   accessToken: string
   userId: string
   summary: string
+  organizer: { email: string; displayName: string }
   start: { dateTime: string; timeZone: string }
   end: { dateTime: string; timeZone: string }
   attendees: Attendee[]
@@ -27,6 +28,7 @@ export async function createCalendarEvent(
     eventComponents: [
       {
         summary: params.summary,
+        organizer: params.organizer,
         start: params.start,
         end: params.end,
         attendees: params.attendees,

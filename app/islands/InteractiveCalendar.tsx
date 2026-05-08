@@ -29,7 +29,7 @@ interface InteractiveCalendarProps {
 }
 
 const HOURS = Array.from({ length: 9 }, (_, i) => i + 10)
-const DAYS = ['月', '火', '水', '木', '金', '土', '日']
+const DAYS = ['日', '月', '火', '水', '木', '金', '土']
 
 function getDayDates(weekStart: string): string[] {
   const dates: string[] = []

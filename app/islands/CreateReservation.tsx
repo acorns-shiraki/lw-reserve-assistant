@@ -1,21 +1,22 @@
 import { useState, useEffect } from 'hono/jsx'
 import WeekPicker from './WeekPicker'
 import MemberSelector from './MemberSelector'
+import WeeklyCalendar from './WeeklyCalendar'
 
 interface UserProfile {
   userId: string
+  email: string
   userName: { lastName?: string | null; firstName?: string | null }
 }
 
-function getThisMonday(): string {
+function getThisSunday(): string {
   const now = new Date()
   const day = now.getDay()
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1)
-  const monday = new Date(now)
-  monday.setDate(diff)
-  const y = monday.getFullYear()
-  const m = String(monday.getMonth() + 1).padStart(2, '0')
-  const d = String(monday.getDate()).padStart(2, '0')
+  const sunday = new Date(now)
+  sunday.setDate(now.getDate() - day)
+  const y = sunday.getFullYear()
+  const m = String(sunday.getMonth() + 1).padStart(2, '0')
+  const d = String(sunday.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
 }
 
@@ -27,11 +28,17 @@ export default function CreateReservation({ woffId }: { woffId: string }) {
   const [title, setTitle] = useState('')
   const [duration, setDuration] = useState(60)
   const [selectedMembers, setSelectedMembers] = useState<string[]>([])
-  const [weekStart, setWeekStart] = useState(getThisMonday())
+  const [memberNames, setMemberNames] = useState<Map<string, string>>(new Map())
+  const [memberEmails, setMemberEmails] = useState<Map<string, string>>(new Map())
+  const [weekStart, setWeekStart] = useState(getThisSunday())
   const [submitting, setSubmitting] = useState(false)
   const [generatedUrl, setGeneratedUrl] = useState('')
   const [copied, setCopied] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [freeSlots, setFreeSlots] = useState<{ date: string; start: string; end: string }[]>([])
+  const [calendarLoading, setCalendarLoading] = useState(false)
+  const [calendarVisibleIds, setCalendarVisibleIds] = useState<string[]>([])
+  const [myCalendarVisible, setMyCalendarVisible] = useState(true)
 
   // WOFF SDK 初期化 + 認証
   useEffect(() => {
@@ -65,35 +72,75 @@ export default function CreateReservation({ woffId }: { woffId: string }) {
         const userData = await res.json()
         setUser(userData)
         setStatus('ready')
-      } catch {
+      } catch (e) {
+        console.error('[CreateReservation] init error:', e)
         setStatus('error')
       }
     }
     init()
   }, [woffId])
 
+  // 自分 + カレンダー表示ONのメンバーで空き時間を取得
+  const calendarUserIdsKey = [
+    ...(myCalendarVisible && user ? [user.userId] : []),
+    ...calendarVisibleIds,
+  ].sort().join(',')
+
+  useEffect(() => {
+    if (status !== 'ready' || !calendarUserIdsKey) {
+      setFreeSlots([])
+      return
+    }
+
+    async function loadSlots() {
+      setCalendarLoading(true)
+      try {
+        const params = new URLSearchParams({
+          userIds: calendarUserIdsKey,
+          weekStart,
+        })
+        const res = await fetch(`/api/calendar/free-slots?${params}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setFreeSlots(data.freeSlots)
+        }
+      } catch {
+        // ignore
+      } finally {
+        setCalendarLoading(false)
+      }
+    }
+    loadSlots()
+  }, [status, calendarUserIdsKey, weekStart, token])
+
   const handleSubmit = async () => {
-    if (!title.trim() || selectedMembers.length === 0) return
+    if (!title.trim()) return
 
     setSubmitting(true)
     setErrorMsg('')
     try {
-      // メンバー情報を取得するために /api/members を呼ぶ
-      const membersRes = await fetch('/api/members', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const membersData = await membersRes.json()
-      const allMembers: { userId: string; name: string }[] = membersData.members ?? []
+      // 自分を出席者に含める
+      const selfAttendee = user
+        ? {
+            userId: user.userId,
+            name: `${user.userName.lastName ?? ''} ${user.userName.firstName ?? ''}`.trim(),
+            email: user.email,
+          }
+        : null
 
-      // 選択メンバーの詳細を取得（email は Users API からは name しか取れないので userId ベースで）
-      const attendees = selectedMembers.map((id) => {
-        const m = allMembers.find((m) => m.userId === id)
-        return {
-          userId: id,
-          name: m?.name ?? id,
-          email: '', // email は後でサーバー側で補完可能
-        }
-      })
+      // 追加メンバーの名前・emailを解決
+      const otherAttendees = selectedMembers.map((id) => ({
+        userId: id,
+        name: memberNames.get(id) ?? id,
+        email: memberEmails.get(id) ?? '',
+      }))
+
+      const attendees = [
+        ...(selfAttendee ? [selfAttendee] : []),
+        ...otherAttendees,
+      ]
 
       const res = await fetch('/api/reservations', {
         method: 'POST',
@@ -250,7 +297,30 @@ export default function CreateReservation({ woffId }: { woffId: string }) {
         <MemberSelector
           token={token}
           selectedIds={selectedMembers}
-          onSelectionChange={setSelectedMembers}
+          onSelectionChange={(ids) => {
+            // 新規追加分はカレンダー表示もON
+            const added = ids.filter((id) => !selectedMembers.includes(id))
+            if (added.length > 0) {
+              setCalendarVisibleIds((prev) => [...prev, ...added])
+            }
+            // 削除分はカレンダー表示からも除外
+            const removed = selectedMembers.filter((id) => !ids.includes(id))
+            if (removed.length > 0) {
+              setCalendarVisibleIds((prev) => prev.filter((id) => !removed.includes(id)))
+            }
+            setSelectedMembers(ids)
+          }}
+          selfName={`${user?.userName.lastName ?? ''} ${user?.userName.firstName ?? ''}`.trim()}
+          onMembersLoaded={(members) => {
+            const names = new Map<string, string>()
+            const emails = new Map<string, string>()
+            for (const m of members) {
+              names.set(m.userId, m.name)
+              emails.set(m.userId, m.email)
+            }
+            setMemberNames(names)
+            setMemberEmails(emails)
+          }}
         />
       </div>
 
@@ -259,11 +329,44 @@ export default function CreateReservation({ woffId }: { woffId: string }) {
         <WeekPicker weekStart={weekStart} onWeekChange={setWeekStart} />
       </div>
 
+      <div class="form-section">
+        <label class="form-label">空き状況</label>
+        <div class="calendar-visibility-toggles">
+          <label class="calendar-visibility-item">
+            <input
+              type="checkbox"
+              checked={myCalendarVisible}
+              onChange={() => setMyCalendarVisible(!myCalendarVisible)}
+            />
+            {user?.userName.lastName} {user?.userName.firstName}（自分）
+          </label>
+          {selectedMembers.map((id) => (
+            <label class="calendar-visibility-item" key={id}>
+              <input
+                type="checkbox"
+                checked={calendarVisibleIds.includes(id)}
+                onChange={() => {
+                  setCalendarVisibleIds((prev) =>
+                    prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
+                  )
+                }}
+              />
+              {memberNames.get(id) ?? id}
+            </label>
+          ))}
+        </div>
+        <WeeklyCalendar
+          weekStart={weekStart}
+          freeSlots={freeSlots}
+          loading={calendarLoading}
+        />
+      </div>
+
       {errorMsg && <p class="form-error">{errorMsg}</p>}
 
       <button
         class="form-submit"
-        disabled={!title.trim() || selectedMembers.length === 0 || submitting}
+        disabled={!title.trim() || submitting}
         onClick={handleSubmit}
       >
         {submitting ? 'URL を発行中...' : 'URL を発行'}

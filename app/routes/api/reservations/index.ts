@@ -34,7 +34,7 @@ app.post('/', async (c) => {
 
   const duration = [30, 60, 90, 120].includes(body.duration) ? body.duration : 60
 
-  const env = getEnv()
+  const env = await getEnv()
   const saToken = await getServiceAccountToken(env)
 
   // 出席メンバーの予定を取得して空き時間を算出

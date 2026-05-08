@@ -18,7 +18,7 @@ app.get('/', async (c) => {
   }
 
   const id = c.req.param('id')!
-  const env = getEnv()
+  const env = await getEnv()
   const reservation = await getReservation(
     env.DYNAMO_TABLE_RESERVATIONS,
     id,

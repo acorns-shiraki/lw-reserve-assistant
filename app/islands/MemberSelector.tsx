@@ -3,15 +3,18 @@ import { useState, useEffect, useRef } from 'hono/jsx'
 interface Member {
   userId: string
   name: string
+  email: string
 }
 
 interface MemberSelectorProps {
   token: string
   selectedIds: string[]
   onSelectionChange: (ids: string[]) => void
+  selfName?: string
+  onMembersLoaded?: (members: Member[]) => void
 }
 
-export default function MemberSelector({ token, selectedIds, onSelectionChange }: MemberSelectorProps) {
+export default function MemberSelector({ token, selectedIds, onSelectionChange, selfName, onMembersLoaded }: MemberSelectorProps) {
   const [allMembers, setAllMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
@@ -27,6 +30,7 @@ export default function MemberSelector({ token, selectedIds, onSelectionChange }
         if (res.ok) {
           const data = await res.json()
           setAllMembers(data.members)
+          onMembersLoaded?.(data.members)
         }
       } catch {
         // ignore
@@ -53,7 +57,10 @@ export default function MemberSelector({ token, selectedIds, onSelectionChange }
   const filtered = query.trim()
     ? allMembers
         .filter((m) => !selectedIds.includes(m.userId))
-        .filter((m) => m.name.toLowerCase().includes(query.toLowerCase()))
+        .filter((m) => {
+          const q = query.toLowerCase()
+          return m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
+        })
         .slice(0, 20)
     : []
 
@@ -71,8 +78,12 @@ export default function MemberSelector({ token, selectedIds, onSelectionChange }
 
   return (
     <div class="member-selector" ref={containerRef}>
-      {/* 選択済みメンバー（チップ表示） */}
       <div class="member-chips">
+        {selfName && (
+          <span class="member-chip member-chip--self">
+            {selfName}（自分）
+          </span>
+        )}
         {selectedMembers.map((m) => (
           <span class="member-chip" key={m.userId}>
             {m.name}
@@ -87,7 +98,6 @@ export default function MemberSelector({ token, selectedIds, onSelectionChange }
         ))}
       </div>
 
-      {/* 検索入力 */}
       <div class="member-search-wrapper">
         <input
           type="text"
@@ -101,7 +111,6 @@ export default function MemberSelector({ token, selectedIds, onSelectionChange }
           onFocus={() => setShowDropdown(true)}
         />
 
-        {/* ドロップダウン候補 */}
         {showDropdown && filtered.length > 0 && (
           <div class="member-dropdown">
             {filtered.map((m) => (
@@ -111,16 +120,13 @@ export default function MemberSelector({ token, selectedIds, onSelectionChange }
                 key={m.userId}
                 onClick={() => handleSelect(m)}
               >
-                {m.name}
+                <span class="member-dropdown__name">{m.name}</span>
+                <span class="member-dropdown__email">{m.email}</span>
               </button>
             ))}
           </div>
         )}
       </div>
-
-      {selectedIds.length === 0 && (
-        <p class="member-hint">名前を入力してメンバーを追加してください</p>
-      )}
     </div>
   )
 }

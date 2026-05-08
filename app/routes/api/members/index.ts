@@ -1,10 +1,9 @@
 import { Hono } from 'hono'
 import { verifyWoffUser } from '../../../../lib/lineworks/verify-user'
-import { getServiceAccountToken } from '../../../../lib/lineworks/auth'
-import { fetchDomainUsers } from '../../../../lib/lineworks/users-api'
+import { getAllMembers } from '../../../../lib/db/members'
 import { getEnv } from '../../../../lib/env'
 
-const app = new Hono() // v2
+const app = new Hono()
 
 app.get('/', async (c) => {
   const authHeader = c.req.header('Authorization')
@@ -18,16 +17,17 @@ app.get('/', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401)
   }
 
-  const env = getEnv()
+  const env = await getEnv()
   try {
-    const saToken = await getServiceAccountToken(env)
-    console.log('[members] SA token obtained, domainId:', env.LW_DOMAIN_ID)
-    const users = await fetchDomainUsers(saToken, env.LW_DOMAIN_ID)
-    console.log('[members] fetched users:', users.length)
+    const allMembers = await getAllMembers(
+      env.DYNAMO_TABLE_MEMBERS,
+      env.DYNAMO_ENDPOINT
+    )
 
-    const members = users.map((u) => ({
-      userId: u.userId,
-      name: [u.userName.lastName, u.userName.firstName].filter(Boolean).join(' '),
+    const members = allMembers.map((m) => ({
+      userId: m.userId,
+      name: m.name,
+      email: m.email,
     }))
 
     return c.json({ members })

@@ -11,11 +11,11 @@ interface WeeklyCalendarProps {
 }
 
 const HOURS = Array.from({ length: 9 }, (_, i) => i + 10) // 10〜18
-const DAYS = ['月', '火', '水', '木', '金']
+const DAYS = ['日', '月', '火', '水', '木', '金', '土']
 
 function getDayDates(weekStart: string): string[] {
   const dates: string[] = []
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 7; i++) {
     const d = new Date(weekStart + 'T00:00:00+09:00')
     d.setDate(d.getDate() + i)
     const y = d.getFullYear()

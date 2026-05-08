@@ -5,7 +5,19 @@
       "Bash(npm install:*)",
       "Bash(npx vitest run)",
       "Bash(npx vitest:*)",
-      "mcp__playwright__browser_navigate"
+      "mcp__playwright__browser_navigate",
+      "Bash(npm uninstall:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm run:*)",
+      "Bash(python -c \":*)",
+      "Bash(ls \"D:/Project/lw-reserve-assistant/node_modules/hono/dist/middleware/serve-static\"*)",
+      "Bash(ls \"D:/Project/lw-reserve-assistant/node_modules/hono/dist/adapter/\"*/serve-static*)",
+      "Bash(MSYS_NO_PATHCONV=1 aws logs tail \"/aws/lambda/LwReserveAssistantStack-AppFunction05AF654E-3QRQzaU5K5Ka\" --region ap-northeast-1 --profile cdk-deploy --since 2m)",
+      "Bash(MSYS_NO_PATHCONV=1 aws lambda get-function-configuration --function-name \"LwReserveAssistantStack-AppFunction05AF654E-3QRQzaU5K5Ka\" --region ap-northeast-1 --profile cdk-deploy --query \"Environment.Variables.WOFF_ID\" --output text)",
+      "Bash(curl -s \"https://26sp57ha3n5axve7ygy3edxshm0lucug.lambda-url.ap-northeast-1.on.aws/\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://26sp57ha3n5axve7ygy3edxshm0lucug.lambda-url.ap-northeast-1.on.aws/static/client.js\")",
+      "Bash(ls -la D:/Project/lw-reserve-assistant/.env*)",
+      "Bash(echo \"--- exit: $?---\")"
     ]
   }
 }

@@ -26,7 +26,7 @@ app.post('/', async (c) => {
     return c.json({ error: 'slots is required' }, 400)
   }
 
-  const env = getEnv()
+  const env = await getEnv()
 
   try {
     await addCandidates(

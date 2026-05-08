@@ -34,14 +34,17 @@ app.get('/', async (c) => {
   const userIds = userIdsParam.split(',').filter(Boolean)
 
   // Service Account トークンでカレンダーAPI呼び出し
-  const env = getEnv()
+  const env = await getEnv()
   const saToken = await getServiceAccountToken(env)
 
-  // weekEnd = weekStart + 4日 (月〜金)
+  // weekEnd = weekStart + 6日 (日〜土の7日間)
   const startDate = new Date(weekStart + 'T00:00:00+09:00')
   const endDate = new Date(startDate)
-  endDate.setDate(endDate.getDate() + 4)
-  const weekEnd = endDate.toISOString().slice(0, 10)
+  endDate.setDate(endDate.getDate() + 6)
+  const y = endDate.toLocaleString('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric' })
+  const m = endDate.toLocaleString('en-CA', { timeZone: 'Asia/Tokyo', month: '2-digit' })
+  const d = endDate.toLocaleString('en-CA', { timeZone: 'Asia/Tokyo', day: '2-digit' })
+  const weekEnd = `${y}-${m}-${d}`
 
   const allEvents = await fetchMultipleUsersEvents(saToken, userIds, weekStart, weekEnd)
   const freeSlots = computeFreeSlots(allEvents, weekStart)

@@ -1,4 +1,5 @@
 import type { CalendarEvent, CalendarEventsResponse } from './types'
+import { expandRecurringEvents } from './expand-recurring'
 
 const API_BASE = 'https://www.worksapis.com/v1.0'
 
@@ -26,7 +27,8 @@ export async function fetchUserEvents(
 
     const data = (await res.json()) as CalendarEventsResponse
 
-    return data.events.flatMap((ec) => ec.eventComponents)
+    // 繰り返しイベントを展開して期間内のオカレンスに変換
+    return expandRecurringEvents(data.events, fromDate, untilDate)
   } catch {
     return []
   }

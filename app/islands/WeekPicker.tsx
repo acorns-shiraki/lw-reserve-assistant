@@ -17,26 +17,25 @@ function formatDisplayDate(dateStr: string): string {
   return `${m}/${day}`
 }
 
-function getThisMonday(): string {
+function getThisSunday(): string {
   const now = new Date()
   const day = now.getDay()
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1)
-  const monday = new Date(now)
-  monday.setDate(diff)
-  return formatDate(monday)
+  const sunday = new Date(now)
+  sunday.setDate(now.getDate() - day)
+  return formatDate(sunday)
 }
 
 export default function WeekPicker({ weekStart, onWeekChange }: WeekPickerProps) {
-  const sunday = new Date(weekStart + 'T00:00:00+09:00')
-  sunday.setDate(sunday.getDate() + 6)
+  const saturday = new Date(weekStart + 'T00:00:00+09:00')
+  saturday.setDate(saturday.getDate() + 6)
 
-  const thisMonday = getThisMonday()
-  const maxMonday = new Date(thisMonday + 'T00:00:00+09:00')
-  maxMonday.setDate(maxMonday.getDate() + 14)
-  const maxMondayStr = formatDate(maxMonday)
+  const thisSunday = getThisSunday()
+  const maxSunday = new Date(thisSunday + 'T00:00:00+09:00')
+  maxSunday.setDate(maxSunday.getDate() + 14)
+  const maxSundayStr = formatDate(maxSunday)
 
-  const canPrev = weekStart > thisMonday
-  const canNext = weekStart < maxMondayStr
+  const canPrev = weekStart > thisSunday
+  const canNext = weekStart < maxSundayStr
 
   const handlePrev = () => {
     if (!canPrev) return
@@ -56,7 +55,7 @@ export default function WeekPicker({ weekStart, onWeekChange }: WeekPickerProps)
     <div class="week-picker">
       <button class="week-picker__btn" onClick={handlePrev} disabled={!canPrev}>◀</button>
       <span class="week-picker__label">
-        {formatDisplayDate(weekStart)} 〜 {formatDisplayDate(formatDate(sunday))}
+        {formatDisplayDate(weekStart)} 〜 {formatDisplayDate(formatDate(saturday))}
       </span>
       <button class="week-picker__btn" onClick={handleNext} disabled={!canNext}>▶</button>
     </div>

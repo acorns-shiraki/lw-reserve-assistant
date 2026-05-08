@@ -13,6 +13,8 @@ export interface CalendarEvent {
   description?: string
   start: EventDateTime
   end: EventDateTime
+  recurrence?: string[]
+  recurringEventId?: string
   transparency?: 'OPAQUE' | 'TRANSPARENT'
   visibility?: 'PUBLIC' | 'PRIVATE'
   attendees?: Attendee[]

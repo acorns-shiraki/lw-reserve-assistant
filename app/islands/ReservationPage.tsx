@@ -237,6 +237,9 @@ export default function ReservationPage({
       )}
 
       <div class="reservation-info">
+        <p class="reservation-info__duration">
+          予定時間: {reservation.duration >= 60 ? `${reservation.duration / 60}時間` : `${reservation.duration}分`}
+        </p>
         <p class="reservation-info__members">
           出席者: {reservation.attendees.map((a) => a.name).join(', ')}
         </p>

@@ -14,15 +14,14 @@ interface UserProfile {
   userName: { lastName?: string | null; firstName?: string | null }
 }
 
-function getThisMonday(): string {
+function getThisSunday(): string {
   const now = new Date()
   const day = now.getDay()
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1)
-  const monday = new Date(now)
-  monday.setDate(diff)
-  const y = monday.getFullYear()
-  const m = String(monday.getMonth() + 1).padStart(2, '0')
-  const d = String(monday.getDate()).padStart(2, '0')
+  const sunday = new Date(now)
+  sunday.setDate(now.getDate() - day)
+  const y = sunday.getFullYear()
+  const m = String(sunday.getMonth() + 1).padStart(2, '0')
+  const d = String(sunday.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
 }
 
@@ -30,7 +29,7 @@ export default function CalendarApp({ woffId }: { woffId: string }) {
   const [status, setStatus] = useState<'loading' | 'ready' | 'need_login' | 'error'>('loading')
   const [token, setToken] = useState('')
   const [user, setUser] = useState<UserProfile | null>(null)
-  const [weekStart, setWeekStart] = useState(getThisMonday())
+  const [weekStart, setWeekStart] = useState(getThisSunday())
   const [selectedMembers, setSelectedMembers] = useState<string[]>([])
   const [freeSlots, setFreeSlots] = useState<FreeSlot[]>([])
   const [calendarLoading, setCalendarLoading] = useState(false)

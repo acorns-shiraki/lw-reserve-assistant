@@ -20,7 +20,7 @@ app.post('/', async (c) => {
   }
 
   const id = c.req.param('id')!
-  const env = getEnv()
+  const env = await getEnv()
 
   const reservation = await getReservation(
     env.DYNAMO_TABLE_RESERVATIONS,
@@ -68,12 +68,13 @@ app.post('/', async (c) => {
 
   const saToken = await getServiceAccountToken(env)
 
-  // 最初の出席メンバーのカレンダーに予定作成
-  const calendarUserId = reservation.attendees[0].userId
+  // 予約作成者のカレンダーに予定作成（作成者 = organizer）
+  const creator = reservation.attendees[0]
   const eventId = await createCalendarEvent({
     accessToken: saToken,
-    userId: calendarUserId,
+    userId: creator.userId,
     summary: reservation.title,
+    organizer: { email: creator.email, displayName: creator.name },
     start: { dateTime: `${earliestSlot.date}T${earliestSlot.start}:00`, timeZone: 'Asia/Tokyo' },
     end: { dateTime: `${earliestSlot.date}T${earliestSlot.end}:00`, timeZone: 'Asia/Tokyo' },
     attendees: attendees.map((a) => ({
